@@ -10,7 +10,7 @@ It is designed for communications students, researchers and engineers aiming to 
 - **Flexible Signal Generation** – [`signal_generator.py`](signal_generator.py) creates OFDM signal components, including preamble and data symbols.
 - **Precomputed Preamble Reference** – [`preamble.mat`](preamble.mat) provides reference data for synchronization or channel estimation in experiments.
 
-Instructions:
+## Instructions:
 
 **1) Instantiate this profile with appropriate parameters**
 
@@ -46,4 +46,5 @@ python3 OFDM_RealTime_RX.py -f 3385e6 -r 1e6 -g 30
 ```
 **5) You may change any of the TX and RX parameters and observe how data demodulation changes. 
 
-**6) If you have any questions, please contact me at meles99@gmail.com
+## Contacts
+If you have any questions, please contact me at meles99@gmail.com
