@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
+# PURPOSE: OFDM Signal Generator
+# Aug. 2025
 
 import math
 import numpy as np
@@ -18,7 +20,8 @@ class OFDM_Generator:
         self.pilotValue = 1.4142 + 1.4142j  # Pilot symbol
 
         # Default text to encode if none is given
-        self.text_message = 'I have worked in SPAN Lab for the last three & half years.I implemented Pseudonymetry in POWDER.'
+        # self.text_message = 'I have worked in SPAN Lab for the last three & half years.I implemented Pseudonymetry in POWDER.'
+        self.text_message = 'Pseudonymetry: A new spectrum sharing protocol for cooperative coexistence b/n wireless systems.'
 
         # Subcarrier allocations
         self.dataCarriers = np.array([-26,-25,-24,-23,-22,-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,
@@ -53,8 +56,8 @@ class OFDM_Generator:
         # Generate modulated data symbols using QPSK
         A = math.sqrt(9/2)  # Amplitude scaling
         data_sequence = self.text2bits(message)  # Convert message to bits
-        # data_bits = np.tile(data_sequence, 20)  # Repeat bits to fill frame
-        data = self.binary2mary(data_sequence, 4)  # Convert to 4-ary symbols (QPSK)
+        data_bits = np.tile(data_sequence, 10)  # Repeat bits to fill frame
+        data = self.binary2mary(data_bits, 4)  # Convert to 4-ary symbols (QPSK)
 
         # QPSK mapping
         inputVec = [0, 1, 2, 3]
@@ -67,7 +70,7 @@ class OFDM_Generator:
         qpsk_IQ = (xI.flatten() + 1j * xQ.flatten()).astype(np.complex64)
         return qpsk_IQ
 
-    def _generate_ofdm_signal(self, data):
+    def generate_ofdm_signal(self, data):
         # Generate OFDM symbols from data
         result = []
         for i in range(len(data) // self.data_size):
@@ -92,19 +95,14 @@ class OFDM_Generator:
         mat = scipy.io.loadmat('preamble.mat')
         ltf = mat['stf'].flatten()  # complex array
         return np.tile(ltf, 1)      # repeat 2 times
-    
-    # def generate_htstf(self):
-    #     # Load and repeat training sequence from HTSTF.mat file
-    #     mat = scipy.io.loadmat('HTSTF.mat')
-    #     stf = mat['stf'].flatten()
-    #     return np.tile(stf, 2)
 
     def generate_ofdm_packet(self):
         # Combine all steps to create a complete ofdm packet
         qpsk = self.generate_QPSK_signal(self.text_message)
+        print('Length of QPSK:', len(qpsk))
         ofdm = self.generate_ofdm_signal(qpsk)
         # preamble    = np.tile([1, 1, 0, 0], 16)
-        preamble = self.generate_ltf(self)
+        preamble = self.generate_ltf()
     
         return np.concatenate([preamble, ofdm])
 
