@@ -2,6 +2,11 @@ import uhd
 import numpy as np
 import time
 import sys
+#!/usr/bin/env python
+# coding: utf-8
+# PURPOSE: OFDM RealTime Signal Transmitter
+# Aug. 2025
+
 import signal
 import argparse
 import importlib
@@ -83,7 +88,7 @@ class OFDM_TX:
         meta.start_of_burst = True
         meta.end_of_burst = False
 
-        max_samps = self.txstreamer.get_max_num_samps() 
+        max_samps = self.txstreamer.get_max_num_samps() - 4
         # print('Max transmit buffer:', max_samps)
         total = samples.size
         idx = 0
@@ -132,13 +137,16 @@ class OFDM_TX:
   
         send_start_time = time.time()
         tx_signal =  self.generator.generate_ofdm_packet()
+        print('Length of tx_signal', len(tx_signal))
+        iteration = 0
         while self.keep_running:
             
             self.send_samples(tx_signal)
+            print('Transmitting OFDM Samples')
             time.sleep(0.1)
-
-            if self.tx_repeat = 10:
-                self.keep_running = False        
+            iteration +=1
+            # if iteration == self.tx_repeat:
+            #     self.keep_running = False        
 
 def handle_interrupt(sig, frame):
     print("\n[INFO] Graceful shutdown triggered.")
