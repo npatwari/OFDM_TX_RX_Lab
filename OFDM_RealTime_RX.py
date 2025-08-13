@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# coding: utf-8
+# PURPOSE: OFDM RealTime Signal Receiver
+# Aug. 2025
+
 import time
 import uhd
 import numpy as np
@@ -42,7 +47,7 @@ class RealTime_OFDM_Detector:
         self.CP = cp
         
         self.ltf_preamble = self.generate_ltf()
-        self.rx_samples = self.packet_length + len(self.ltf_preamble)
+        self.rx_samples = self.packet_length * 10 + len(self.ltf_preamble)
         self.buffer_length = int(2 * self.rx_samples)
         
         self.avg_signal_power = []
@@ -89,7 +94,7 @@ class RealTime_OFDM_Detector:
     #     lag = np.argmax(np.abs(corr))
     #     return lag, corr
 
-    def cross_correlation_max(rx_signal, preamble_template):
+    def cross_correlation_max(self, rx_signal, preamble_template):
         """
         Normalized complex cross-correlation to find preamble in received signal.
     
@@ -172,36 +177,40 @@ class RealTime_OFDM_Detector:
         # is closest in the complex plane.
         data_out = [np.argmin(np.abs(r-outputVec)) for r in r_hat]
         return data_out
+
     def OFDM_RX(self, data):
-        for i in range(len(data)//(OFDM_size)):
-            data_cp = data[i*(OFDM_size):(i+1)*(OFDM_size)]
-            data_without_cp = data_cp[CP:]
+        for i in range(len(data) // self.OFDM_size):
+            data_cp = data[i*self.OFDM_size:(i+1)*self.OFDM_size]
+            data_without_cp = data_cp[self.CP:]
             
             # Generate frequency domain signal
-            OFDM_freq = np.fft.fft(data_without_cp,n=FFT)
+            OFDM_freq = np.fft.fft(data_without_cp, n=self.FFT)
             
-            H_est = self.Channel_Estimation(OFDM_freq) # estimate the channel
+            H_est = self.Channel_Estimation(OFDM_freq)  # estimate the channel
+            OFDM_est = self.Equalization(OFDM_freq, H_est)  # sub-carrier equalization
             
-            OFDM_est = self.Equalization(OFDM_freq,H_est) # sub-carrier equalization
+            OFDM_data = OFDM_est[self.dataCarriers]  # extract the data signal
             
-            OFDM_data = OFDM_est[dataCarriers] # extract the data signal
             if i == 0:
-                OFDM_swap =  OFDM_data
+                OFDM_swap = OFDM_data
             else:
-                OFDM_signal = np.concatenate((OFDM_swap,  OFDM_data))
-                OFDM_swap = OFDM_signal
-        return OFDM_signal
+                OFDM_swap = np.concatenate((OFDM_swap, OFDM_data))
+        return OFDM_swap
+
         
     def Channel_Estimation(self, signal):
-        pilots = signal[self.pilotCarriers] 
-        H_at_pilots = pilots / self.pilotValue 
-        
-        # Perform interpolation between the pilot carriers to get an estimate of the channel in the data carriers. 
-        H_abs=scipy.interpolate.interp1d(pilotCarriers, abs(H_at_pilots), kind='nearest', fill_value='extrapolate')(self.allCarriers )
-        H_phase = scipy.interpolate.interp1d(pilotCarriers, np.angle(H_at_pilots), kind='nearest',fill_value = 'extrapolate')(self.allCarriers)
-        H_estimate = H_abs * np.exp(1j*H_phase)
-        
-        return H_estimate
+        eps = 1e-12
+        pilots = signal[self.pilotCarriers]
+        H_at_pilots = pilots / (self.pilotValue + eps)
+    
+        H_abs   = scipy.interpolate.interp1d(self.pilotCarriers, np.abs(H_at_pilots),
+                                             kind='nearest', fill_value='extrapolate')(self.allCarriers)
+        H_phase = scipy.interpolate.interp1d(self.pilotCarriers, np.angle(H_at_pilots),
+                                             kind='nearest', fill_value='extrapolate')(self.allCarriers)
+        H_estimate = H_abs * np.exp(1j * H_phase)
+        H_full = np.zeros_like(signal, dtype=complex)
+        H_full[self.allCarriers] = H_estimate
+        return H_full
         
     def Equalization(self, OFDM_demod, Hest):
         return OFDM_demod / Hest
@@ -237,7 +246,7 @@ class RealTime_OFDM_Detector:
 
     def detect_ofdm(self):
         
-        threshold_factor = 4.5
+        threshold_factor = 14.0
         corr_window_len = 80
     
         self.setup_usrp()
@@ -250,6 +259,7 @@ class RealTime_OFDM_Detector:
             
         rx_noise =   np.mean(self.avg_noise_power)
         start_time = time.time()
+        waiting_for_signal = False
         try:
             while True:
                 samples = np.array(self.big_buffer, dtype=np.complex64)
@@ -257,30 +267,41 @@ class RealTime_OFDM_Detector:
                 # # Write raw samples to file
                 # samples = samples.astype(np.complex64)
                 # with open("rx_output.dat", "ab") as f:
-                #         samples.tofile(f)
+                    # samples.tofile(f)
 
                 lag, corr = self.cross_correlation_max(samples[:-self.rx_samples], self.ltf_preamble)
                 start = lag + len(self.ltf_preamble)
 
                 corr_peak = np.max(np.abs(corr[lag:lag + corr_window_len]))
                 corr_median = np.median(np.abs(corr))
-
+                ratio = corr_peak/corr_median
+                # if corr_peak < threshold_factor * corr_median:
+                #     # print(f"[SKIP] Weak peak: {corr_peak:.2f} < {threshold_factor}×{corr_median:.2f}")
+                #     self.read_samples(self.rx_samples)
+                #     print('Waiting for ofdm signal!')
+                #     continue
                 if corr_peak < threshold_factor * corr_median:
-                    # print(f"[SKIP] Weak peak: {corr_peak:.2f} < {threshold_factor}×{corr_median:.2f}")
                     self.read_samples(self.rx_samples)
-                    print('Waiting for ofdm signal!')
+                    if not waiting_for_signal:   # Only print once
+                        print('Waiting for ofdm signal!')
+                        waiting_for_signal = True
                     continue
+                else:
+                    waiting_for_signal = False  # Reset flag once signal is strong enough
 
                 if start + self.rx_samples > len(samples):
                     self.read_samples(self.rx_samples)
-                    print('Waiting for ofdm signal')
+                    print('🚫 Waiting for ofdm signal')
                     continue
     
-                rx_signal = samples[start:start + self.rx_samples]
-                signal_estimate = self.average_power - rx_noise
-                self.avg_signal_power.append(signal_estimate)
+                rx_signal = samples[start:start + self.packet_length]
+                signal_power = self.average_power(rx_signal) - rx_noise
+                self.avg_signal_power.append(signal_power)
+
+                # Demodulate data symbols
                 rx_bits = self.matched_filter_detection(rx_signal)
                 rx_str = self.binvector2str(rx_bits)
+                print("✅ Message Correctly Demodulated!")
                 print('Received String:',rx_str)
                 
                 self.read_samples(self.rx_samples)
@@ -291,11 +312,14 @@ class RealTime_OFDM_Detector:
         finally:
             
             self.stop_usrp()
-            if np.mean(self.avg_signal_power) == 0:
-                print("Zero signal level detected!")
-            else: 
-                snr = 10 * np.log10(0.5*np.mean(self.avg_signal_power) / rx_noise)
+            
+            # Ensure self.avg_signal_power has data before calculating SNR
+            if len(self.avg_signal_power) > 0:
+                snr = 10 * np.log10(0.5 * np.mean(self.avg_signal_power) / (rx_noise +1e-12))
                 print(f"SNR Estimate (48th subcarrier): {snr:.2f} dB")
+            else:
+                snr = 0
+                print("No signal power data available. SNR cannot be calculated.")
 
 if __name__ == "__main__":
     
