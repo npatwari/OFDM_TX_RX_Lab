@@ -44,4 +44,5 @@ On the second rooftop node, run the following command.
 python3 OFDM_RealTime_RX.py -f 3385e6 -r 1e6 -g 30
 ```
 **5) You may change any of the TX and RX parameters and observe how data demodulation changes. 
-** If you have any questions, please contact me at meles99@gmail.com
+
+**6) If you have any questions, please contact me at meles99@gmail.com
