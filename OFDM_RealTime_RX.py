@@ -85,7 +85,7 @@ class RealTime_OFDM_Detector:
     # Step 3: Your function to load and repeat it
     def generate_ltf(self):
         mat = scipy.io.loadmat('preamble.mat')
-        ltf = mat['stf'].flatten()  # complex array
+        ltf = mat['ltf'].flatten()  # complex array
         return np.tile(ltf, 1)      # repeat 2 times8)
 
     # def cross_correlation_max(self, signal, pattern):
