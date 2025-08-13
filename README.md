@@ -9,6 +9,7 @@ It is designed for communications students, researchers and engineers aiming to 
 - **Live OFDM Reception** – [`OFDM_RealTime_RX.py`](OFDM_RealTime_RX.py) receives over-the-air OFDM transmissions, captures IQ samples, and performs basic synchronization or demodulation.
 - **Flexible Signal Generation** – [`signal_generator.py`](signal_generator.py) creates OFDM signal components, including preamble and data symbols.
 - **Precomputed Preamble Reference** – [`preamble.mat`](preamble.mat) provides reference data for synchronization or channel estimation in experiments.
+- **Notebook Visualization** – [`OFDM_TX_RX.ipynb`](OFDM_TX_RX.ipynb) provides Jupyter Notebook visualization of OFDM signal generation and detection. Use the recorded .dat files which are recorded realworld signals received at different signal to noise ratios (SNR).
 
 ## Instructions:
 
