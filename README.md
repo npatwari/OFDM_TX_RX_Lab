@@ -10,7 +10,6 @@ It is designed for communications students, researchers and engineers aiming to 
 - **Flexible Signal Generation** – [`signal_generator.py`](signal_generator.py) creates OFDM signal components, including preamble and data symbols.
 - **Precomputed Preamble Reference** – [`preamble.mat`](preamble.mat) provides reference data for synchronization or channel estimation in experiments.
 
-
 Instructions:
 
 **1) Instantiate this profile with appropriate parameters**
@@ -18,12 +17,14 @@ Instructions:
 Choose any profile in POWDER with 2 rooftop radio in the CBRS band.
 
 **2) Setting up the experiment**
-- once the experiment is ready, run the following command on each of the nodes
+
+once the experiment is ready, run the following command on each of the nodes
   ```
   ssh -Y <username>@<radio_hostname>
   ```
   
 **3) Cloning OFDM_TX_RX to Each Node**
+
 Run the following command on each node to clone OFDM_TX_RX repository to your nodes. 
   ```
 git clone https://github.com/Meles-Weldegebriel/OFDM_TX_RX.git
