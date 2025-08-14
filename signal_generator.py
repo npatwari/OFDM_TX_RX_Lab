@@ -20,7 +20,6 @@ class OFDM_Generator:
         self.pilotValue = 1.4142 + 1.4142j  # Pilot symbol
 
         # Default text to encode if none is given
-        # self.text_message = 'I have worked in SPAN Lab for the last three & half years.I implemented Pseudonymetry in POWDER.'
         self.text_message = 'Pseudonymetry: A new spectrum sharing protocol for cooperative coexistence b/n wireless systems.'
 
         # Subcarrier allocations
@@ -93,7 +92,7 @@ class OFDM_Generator:
     # Step 3: Your function to load and repeat it
     def generate_ltf(self):
         mat = scipy.io.loadmat('preamble.mat')
-        ltf = mat['ltf'].flatten()  # complex array 
+        ltf = mat['ltf'].flatten()  # complex array
         return np.tile(ltf, 1)      # repeat 2 times
 
     def generate_ofdm_packet(self):
@@ -104,5 +103,5 @@ class OFDM_Generator:
         # preamble    = np.tile([1, 1, 0, 0], 16)
         preamble = self.generate_ltf()
     
-        return np.concatenate([preamble, ofdm])
+        return np.concatenate([0.3 * preamble, ofdm])
 
