@@ -68,7 +68,7 @@ class OFDM_TX:
         # Configure radio parameters
         self.currate = rate
         self.usrp.set_tx_rate(rate, self.channel)
-        if use_lo_offset:
+        if use_lo_offset: 
             lo_off = rate / 2 + self.lo_adjust
             tune_req = uhd.types.TuneRequest(freq, lo_off)
         else:
