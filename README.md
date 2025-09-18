@@ -1,4 +1,4 @@
-# OFDM Over-the-Air TX/RX with USRP SDRs
+# OFDM Over-the-Air TX/RX with SDR Devices
 
 This repository provides Python-based tools for **real-time over-the-air (OTA) transmission and reception** of **OFDM signals** using **USRP software-defined radios (SDRs)** via the **UHD API**.  
 It is designed for communications students, researchers and engineers aiming to prototype and test OFDM systems in live wireless environments.
