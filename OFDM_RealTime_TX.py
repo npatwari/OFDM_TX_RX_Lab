@@ -15,9 +15,9 @@ from requests.auth import HTTPBasicAuth
 import csv
 import datetime
 # Reload the watermark generator module
-import signal_generator
-importlib.reload(signal_generator)
-from signal_generator import OFDM_Generator
+import OFDM_signal_generator
+importlib.reload(OFDM_signal_generator)
+from OFDM_signal_generator import OFDM_Generator
 
 class OFDM_TX:
     def adjust_parameters_by_sample_rate(self):
