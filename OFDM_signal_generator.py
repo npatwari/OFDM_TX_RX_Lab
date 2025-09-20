@@ -93,7 +93,7 @@ class OFDM_Generator:
     def generate_ltf(self):
         mat = scipy.io.loadmat('preamble.mat')
         ltf = mat['ltf'].flatten()  # complex array
-        return np.tile(ltf, 1)      # repeat 2 times
+        return np.tile(ltf, 1)      # repeat 1 times
 
     def generate_ofdm_packet(self):
         # Combine all steps to create a complete ofdm packet
