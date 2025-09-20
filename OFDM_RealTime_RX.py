@@ -261,7 +261,7 @@ class RealTime_OFDM_Detector:
 
     def detect_ofdm(self):
         
-        threshold_factor = 14.0
+        threshold_factor = 8.5
         corr_window_len = 80
     
         self.setup_usrp()
