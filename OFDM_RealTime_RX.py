@@ -310,13 +310,13 @@ class RealTime_OFDM_Detector:
                 print("✅ Message Correctly Demodulated!")
                 print('Received Message:',rx_str)
 
-                # # Write raw samples to file
-                # record = samples[lag:start + self.packet_length]
-                # record = record.astype(np.complex64)
-                # # with open("rx_output.dat", "ab") as f:
-                # #     record.tofile(f)
-                # with open("rx_output.dat", "wb") as f:
+                # Write raw samples to file
+                record = samples #[lag:start + self.packet_length]
+                record = record.astype(np.complex64)
+                # with open("rx_output.dat", "ab") as f:
                 #     record.tofile(f)
+                with open("rx_output.dat", "wb") as f:
+                    record.tofile(f)
                     
                 self.read_samples(self.rx_samples)
     
