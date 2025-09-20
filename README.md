@@ -15,7 +15,14 @@ It is designed for communications students, researchers and engineers aiming to 
 
 **1) Instantiate this profile with appropriate parameters**
 
-Choose any profile in POWDER with 2 rooftop radio in the CBRS band.
+Select a POWDER Profile:
+Choose any available POWDER profile (for example, OFDM_TX_RX) that supports rooftop radios operating in the CBRS band.
+
+Configure Rooftop Radios: 
+Ensure that the experiment includes two rooftop radio nodes. These nodes should be geographically close enough to allow reliable reception of transmitted signals.
+
+Transmission Power Limitation: 
+Keep in mind that POWDER enforces a maximum transmission power limit for all radios. Make sure your configuration complies with this constraint to avoid experiment errors or regulatory violations.
 
 **2) Setting up the experiment**
 
